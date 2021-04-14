@@ -1,0 +1,29 @@
+# Compare the best performance of bagging with random forest
+best_classifier = grid_search.best_estimator_
+score_random_forest = model_selection.cross_val_score(best_classifier, X_train, Y_train, cv=skf)
+sc = []
+best_mean = 0
+best_mean_index = 0
+i = 0
+parameters = {'n_estimators': [2, 3, 4]}
+for estimators in parameters['n_estimators']:
+
+  model = BaggingClassifier(base_estimator=DecisionTreeClassifier(), n_estimators=estimators, random_state=10)
+  score = model_selection.cross_val_score(model, X_train, Y_train, cv=skf)
+
+  sc.append(score)
+
+  #print("AUC: %0.2f (+/- %0.2f)" % (score.mean(), score.std() * 2))
+
+  if score.mean()>best_mean:
+    best_mean_index = i
+    best_mean = score.mean()
+    
+  i+=1
+score_bagging = sc[best_mean_index]
+fig = plt.figure(figsize=(10,10))
+fig.suptitle('Comparison between the best bagging based model vs best Random forest model.')
+ax = fig.add_subplot(111)
+plt.boxplot([score_bagging, score_random_forest])
+ax.set_xticklabels(['Best Bagging Model', 'Best Random Forest Model'])
+plt.show()
